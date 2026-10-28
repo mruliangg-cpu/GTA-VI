@@ -4,7 +4,7 @@
 html,body{height:100%;background:#05060f;color:#fff;font:600 14px system-ui,sans-serif;overflow:hidden;touch-action:none;user-select:none}
 canvas#c{position:fixed;inset:0}
 .ov{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:5;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom);text-align:center}
-#menu{background:linear-gradient(160deg,#ff3d9a88,#2b0a5acc,#00d0ff88)}#pause{background:#000b}#wasted{background:#600a;font:900 60px Impact,sans-serif;color:#ff4455}
+#menu{background:#1a0a33}#pause{background:#000b}#wasted{background:#600a;font:900 60px Impact,sans-serif;color:#ff4455}
 h1{font:italic 900 clamp(34px,10vw,84px)/.95 Impact,sans-serif;background:linear-gradient(#ffe36e,#ff4fa0);-webkit-background-clip:text;color:transparent}
 h1 small{display:block;font-size:.5em;-webkit-text-fill-color:#7ff;letter-spacing:6px}
 button{background:#fff;color:#201040;border:0;border-radius:8px;padding:12px 24px;font:800 16px system-ui;min-width:220px}button:disabled{opacity:.4}
@@ -28,10 +28,10 @@ button{background:#fff;color:#201040;border:0;border-radius:8px;padding:12px 24p
 <div id="load" class="ov" style="z-index:20;background:#05060f"><h1>GTA VI<small>ULIAN EDITION</small></h1><p>Loading city…</p></div>
 <div id="menu" class="ov"><h1>GTA VI<small>ULIAN EDITION</small></h1>
 <button id="bn">OFFLINE — New Game</button><button id="bo">ONLINE — PLAY WITH FRIENDS</button><button id="bc">Continue</button><button id="bs">Settings: Graphics HIGH</button><button id="bq">Quit</button><p id="mt" style="max-width:420px;font-size:12px;opacity:.85">WASD move · Shift sprint · Mouse look (click to lock) · F enter/exit car · E interact · Q switch character · LMB fire · R reload · 1/2 fists/pistol · Space handbrake · T weather · Esc/Tab pause</p></div>
-<div id="pause" class="ov" hidden><h1 style="font-size:40px">GTA VI<small>ULIAN EDITION · PHONE</small></h1><p id="ph" style="max-width:420px;line-height:1.6"></p><button id="pr">Resume</button><button id="ps">Save</button><button id="po">Online</button><div id="jobs" style="max-width:440px"></div><button id="pq">Quit to Menu</button></div>
+<div id="pause" class="ov" hidden><h1 style="font-size:40px">GTA VI<small>ULIAN EDITION · PHONE</small></h1><p id="ph" style="max-width:420px;line-height:1.6"></p><button id="pr">Resume</button><button id="ps">Save</button><button id="po">Online</button><button id="pset">⚙ Settings</button><div id="jobs" style="max-width:440px"></div><button id="pq">Quit to Menu</button></div>
 <div id="wasted" class="ov" hidden>WASTED</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="client/online-config.js"></script><script src="client/online.js"></script><script src="client/online-ui.js"></script><script src="client/missions.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="client/online-config.js"></script><script src="client/online.js"></script><script src="client/online-ui.js"></script><script src="client/missions.js"></script><script src="client/settings.js"></script>
 <script>window.THREE||document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"><\/script>')</script>
 <script>
 'use strict';
@@ -47,7 +47,7 @@ let R;try{R=new THREE.WebGLRenderer({canvas:$('c'),antialias:false})}catch(e){fa
 const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(65,1,.5,900);
 const sun=new THREE.DirectionalLight(0xffffff,1),hemi=new THREE.HemisphereLight(0xbcd8ff,0x556070,.7);scene.add(sun,sun.target,hemi);
 sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-70,right:70,top:70,bottom:-70,far:400});
-function resize(){R.setPixelRatio(Q.hi?Math.min(devicePixelRatio,1.75):1);R.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}addEventListener('resize',resize);
+function resize(){R.setPixelRatio(window.USET?USET.pr():(Q.hi?Math.min(devicePixelRatio,1.75):1));R.setSize(innerWidth,innerHeight);cam.fov=window.USET?USET.fov:65;cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}addEventListener('resize',resize);
 const BG=new THREE.BoxGeometry(1,1,1),CG=new THREE.CylinderGeometry(.5,.5,1,10),SG=new THREE.SphereGeometry(.5,8,6),MC={},LB={};
 const mat=c=>MC[c]||(MC[c]=new THREE.MeshLambertMaterial({color:c})),lamp=c=>LB[c]||(LB[c]=new THREE.MeshBasicMaterial({color:c}));
 function part(g,c,sx,sy,sz,x,y,z,p,m2){const m=new THREE.Mesh(g,m2||mat(c));m.scale.set(sx,sy,sz);m.position.set(x,y,z);m.castShadow=Q.hi;p&&p.add(m);return m}
@@ -250,14 +250,14 @@ function onKey(k){if(!playing||G.dead)return;
  else if(k==='KeyR'&&G.wep===2){const n=Math.min(12-G.ammo,G.res);G.ammo+=n;G.res-=n}
  else if(k==='KeyT'){G.weather=(G.weather+1)%4;toast(['Clear skies','Heavy fog','Rain','Thunderstorm'][G.weather])}
  else if(k==='Weapon')G.wep=3-G.wep;else if(k==='Digit1')G.wep=1;else if(k==='Digit2')G.wep=2}
-addEventListener('keydown',e=>{if(!K[e.code])onKey(e.code);K[e.code]=1;if(['Space','Tab','ArrowUp','ArrowDown'].includes(e.code))e.preventDefault()});addEventListener('keyup',e=>K[e.code]=0);
+addEventListener('keydown',e=>{const c=USET.map(e.code);if(!K[c])onKey(c);K[c]=1;if(['Space','Tab','ArrowUp','ArrowDown'].includes(e.code))e.preventDefault()});addEventListener('keyup',e=>K[USET.map(e.code)]=0);
 let drag=false;$('c').addEventListener('mousedown',e=>{if(!playing)return;if(document.pointerLockElement)K.Fire=1;else $('c').requestPointerLock&&$('c').requestPointerLock();drag=true});
 addEventListener('mouseup',()=>{K.Fire=0;drag=false});
-addEventListener('mousemove',e=>{if(playing&&G&&!G.paused&&document.pointerLockElement){G.cy-=e.movementX*.003;G.cp=cl(G.cp+e.movementY*.003,.05,1.1)}});
+addEventListener('mousemove',e=>{if(playing&&G&&!G.paused&&document.pointerLockElement){G.cy-=e.movementX*.003*USET.mouse;G.cp=cl(G.cp+e.movementY*.003*USET.mouse*USET.inv,.05,1.1)}});
 document.querySelectorAll('#touch button').forEach(b=>{const k=b.dataset.k;b.addEventListener('touchstart',e=>{e.preventDefault();K[k]=1;onKey(k)});b.addEventListener('touchend',()=>K[k]=0)});
 let tj=null,tl=null;addEventListener('touchstart',e=>{for(const t of e.changedTouches){if(t.target.tagName==='BUTTON')continue;if(t.clientX<innerWidth/2)tj={id:t.identifier,x:t.clientX,y:t.clientY};else tl={id:t.identifier,x:t.clientX,y:t.clientY}}});
 addEventListener('touchmove',e=>{if(!G)return;for(const t of e.changedTouches){if(tj&&t.identifier===tj.id){const dx=t.clientX-tj.x,dy=t.clientY-tj.y;K.KeyA=dx<-18;K.KeyD=dx>18;K.KeyW=dy<-18;K.KeyS=dy>18}
- if(tl&&t.identifier===tl.id){G.cy-=(t.clientX-tl.x)*.006;G.cp=cl(G.cp+(t.clientY-tl.y)*.004,.05,1.1);tl.x=t.clientX;tl.y=t.clientY}}});
+ if(tl&&t.identifier===tl.id){G.cy-=(t.clientX-tl.x)*.006*USET.touch;G.cp=cl(G.cp+(t.clientY-tl.y)*.004*USET.touch*USET.inv,.05,1.1);tl.x=t.clientX;tl.y=t.clientY}}});
 addEventListener('touchend',e=>{for(const t of e.changedTouches){if(tj&&t.identifier===tj.id){tj=null;K.KeyA=K.KeyD=K.KeyW=K.KeyS=0}if(tl&&t.identifier===tl.id)tl=null}});
 function initAudio(){try{audio=new AudioContext();osc=audio.createOscillator();gain=audio.createGain();osc.type='sawtooth';gain.gain.value=0;osc.connect(gain).connect(audio.destination);osc.start()}catch(e){}}
 /* ---------- systems ---------- */
@@ -265,7 +265,7 @@ const cA=new THREE.Color(),cB=new THREE.Color(),cC=new THREE.Color(),FOG=[.0016,
 function env(dt){G.hour=(G.hour+dt/40)%24;const ch=G.chars[G.ci],a=(G.hour-6)/12*Math.PI,sh=Math.sin(a),day=cl(sh*2+.2,0,1),gr=[0,.35,.55,.8][G.weather],dusk=cl(1-Math.abs(sh)*3,0,1);
  cA.set(0x050615).lerp(cB.set(0x6ab8ff),day).lerp(cC.set(0xff7a4d),dusk*.6*(1-gr)).lerp(cB.set(0x8a95a3).multiplyScalar(.25+.75*day),gr);
  if(G.fl>0){G.fl-=dt;cA.set(0xeeeeff);hemi.intensity=2.5}else{hemi.intensity=.18+.6*day;if(G.weather===3&&Math.random()<dt*.12){G.fl=.15}}
- scene.background.copy(cA);scene.fog.color.copy(cA);scene.fog.density=FOG[G.weather]*(1+(1-day)*.5);
+ scene.background.copy(cA);scene.fog.color.copy(cA);scene.fog.density=FOG[G.weather]*(1+(1-day)*.5)*USET.fog;
  sun.intensity=Math.max(0,sh)*(1-gr*.6)*1.1;sun.position.set(ch.x+Math.cos(a)*120,Math.max(15,Math.abs(Math.sin(a))*120),ch.z+40);sun.target.position.set(ch.x,0,ch.z);
  winMats.forEach(m=>m.emissiveIntensity=1-day);cloudM.color.setScalar(.25+.75*day);cloudM.opacity=.4+gr*.4;
  rain.visible=G.weather>=2;if(rain.visible){for(let i=1;i<1800;i+=3){rp[i]-=55*dt;if(rp[i]<0)rp[i]+=40}rain.geometry.attributes.position.needsUpdate=true;rain.position.set(cam.position.x,cam.position.y-15,cam.position.z)}
@@ -379,7 +379,7 @@ function openOnline(){if(!window.UlianOnlineUI){const t=$('mt');t.style.color='#
 function onlineTick(dt,c){if(!remote||!window.UlianOnline)return;remote.update(dt);if(UlianOnline.room)UlianOnline.sendState({x:G.veh?G.veh.x:c.x,y:0,z:G.veh?G.veh.z:c.z,ry:G.veh?G.veh.h:c.ry,anim:G.veh?'drive':'idle',veh:G.veh?'car':null})}
 function start(cont){if(!audio)initAudio();initGame(cont);playing=true;$('menu').hidden=true;$('hud').hidden=false;$('touch').hidden=!('ontouchstart' in window);resize();toast(cont?'Welcome back':'Marco: "Raul is waiting on the beach."')}
 $('bn').onclick=()=>start(false);$('bo').onclick=openOnline;$('po').onclick=()=>{pause(false);openOnline()};$('bc').onclick=()=>start(true);
-$('bs').onclick=e=>{Q.hi=!Q.hi;e.target.textContent='Settings: Graphics '+(Q.hi?'HIGH':'LOW');resize()};
+$('bs').textContent='⚙ Settings';$('bs').onclick=()=>USET.open();$('pset').onclick=()=>USET.open();try{USET.boot()}catch(e){}
 $('bq').onclick=()=>{window.close();$('mt').textContent='Thanks for playing — you can close this tab.'};
 $('pr').onclick=()=>pause(false);$('ps').onclick=()=>save();$('pq').onclick=()=>{pause(false);playing=false;$('menu').hidden=false;$('hud').hidden=true;$('touch').hidden=true;initGame(false)};
 try{if(!localStorage.getItem('vcu'))$('bc').disabled=true}catch(e){$('bc').disabled=true}
