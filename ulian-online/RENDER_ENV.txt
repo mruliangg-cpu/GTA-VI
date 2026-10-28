@@ -1,5 +1,0 @@
-Вставь эти 3 переменные в Render -> твой сервис -> Environment:
-
-SUPABASE_URL = https://lcmqxxyyefedccfpxmix.supabase.co
-SUPABASE_SERVICE_ROLE_KEY = (вставь НОВЫЙ secret key из Supabase; секрет не хранить в файлах и GitHub)
-ALLOWED_ORIGINS = https://ТВОЁ-ИМЯ-GITHUB.github.io
