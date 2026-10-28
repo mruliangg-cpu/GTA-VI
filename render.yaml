@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: ulian-game-server
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: DEV_ALLOW_GUESTS
+        value: "false"
+      - key: MAX_PLAYERS_PER_ROOM
+        value: "8"
