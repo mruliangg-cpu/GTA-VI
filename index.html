@@ -27,17 +27,17 @@ button{background:#fff;color:#201040;border:0;border-radius:8px;padding:12px 24p
 <div id="touch" hidden><button style="right:90px;bottom:150px" data-k="KeyF">ENTER</button><button style="right:16px;bottom:150px" data-k="KeyE">USE</button><button style="right:16px;bottom:230px;background:#f55" data-k="Fire">FIRE</button><button style="right:90px;bottom:230px" data-k="Space">BRAKE</button><button style="right:164px;bottom:150px" data-k="KeyQ">SWITCH</button><button style="right:164px;bottom:230px" data-k="KeyR">RELOAD</button><button style="right:238px;bottom:150px" data-k="Weapon">GUN/FIST</button><button style="right:12px;top:calc(env(safe-area-inset-top,0px) + 70px);width:56px;height:56px" data-k="Escape">PAUSE</button></div>
 <div id="load" class="ov" style="z-index:20;background:#05060f"><h1>GTA VI<small>ULIAN EDITION</small></h1><p>Loading city…</p></div>
 <div id="menu" class="ov"><h1>GTA VI<small>ULIAN EDITION</small></h1>
-<button id="bn">OFFLINE — New Game</button><button id="bo">ONLINE — PLAY WITH FRIENDS</button><button id="bc">Continue</button><button id="bs">Settings: Graphics HIGH</button><button id="bq">Quit</button><p id="mt" style="max-width:420px;font-size:12px;opacity:.85">WASD move · Shift sprint · Mouse look (click to lock) · F enter/exit car · E interact · Q switch character · LMB fire · R reload · 1/2 fists/pistol · Space handbrake · T weather · Esc/Tab pause</p></div>
+<button id="bn">OFFLINE — New Game</button><button id="bo">ONLINE — PLAY WITH FRIENDS</button><button id="bc">Continue</button><button id="bs">Settings: Graphics HIGH</button><button id="bq">Quit</button><p id="mt" style="max-width:420px;font-size:12px;opacity:.85">WASD move · Shift sprint · Mouse look (click to lock) · F enter/exit car · E interact · Q switch character · LMB fire · R reload · 1/2 fists/pistol · Space handbrake · T weather · Esc/Tab pause · U players · M map · P invite friends · L phone</p></div>
 <div id="pause" class="ov" hidden><h1 style="font-size:40px">GTA VI<small>ULIAN EDITION · PHONE</small></h1><p id="ph" style="max-width:420px;line-height:1.6"></p><button id="pr">Resume</button><button id="ps">Save</button><button id="po">Online</button><button id="pset">⚙ Settings</button><div id="jobs" style="max-width:440px"></div><button id="pq">Quit to Menu</button></div>
 <div id="wasted" class="ov" hidden>WASTED</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="client/online-config.js"></script><script src="client/online.js"></script><script src="client/online-ui.js"></script><script src="client/missions.js"></script><script src="client/settings.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="client/online-config.js"></script><script src="client/online.js"></script><script src="client/online-ui.js"></script><script src="client/missions.js"></script><script src="client/settings.js"></script><script src="client/keys.js"></script><script src="client/city.js"></script>
 <script>window.THREE||document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"><\/script>')</script>
 <script>
 'use strict';
 function fatal(m){const t=document.getElementById('mt');if(t){t.style.fontSize='15px';t.style.color='#ffd0d0';t.textContent=m}document.querySelectorAll('#menu button').forEach(b=>b.disabled=true)}
 if(typeof THREE==='undefined'){fatal('3D engine (three.js) could not be loaded. Check your internet connection or ad-blocker, then reload.');throw new Error('THREE missing')}
-const B=70,N=7,SZ=B*N,$=id=>document.getElementById(id),cl=(v,a,b)=>Math.max(a,Math.min(b,v)),rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.random()*a.length|0];
+const B=70,N=17,SZ=B*N,$=id=>document.getElementById(id),cl=(v,a,b)=>Math.max(a,Math.min(b,v)),rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.random()*a.length|0];
 const wrap=a=>{while(a>Math.PI)a-=6.2832;while(a<-Math.PI)a+=6.2832;return a};
 const Q={hi:true},K={},cars=[],peds=[],pick_=[],offs=[];let heli=null;let G=null,playing=false,audio=null,osc=null,gain=null;
 function toast(t){const e=$('toast');e.textContent=t;e.style.opacity=1;clearTimeout(toast.h);toast.h=setTimeout(()=>e.style.opacity=0,2200)}
@@ -203,7 +203,7 @@ function mission(){if(window.Missions&&Missions.active){const st=JS.st,o=Mission
 function foot(dt){const c=G.chars[G.ci],mx=(K.KeyD?1:0)-(K.KeyA?1:0),mz=(K.KeyW?1:0)-(K.KeyS?1:0),f=[Math.sin(G.cy),Math.cos(G.cy)],r=[-f[1],f[0]];
  let dx=f[0]*mz+r[0]*mx,dz=f[1]*mz+r[1]*mx;const l=Math.hypot(dx,dz),sw=c.x>SZ+62,sp=sw?2.6:(K.ShiftLeft?9:5.5);
  if(l>0){dx/=l;dz/=l;c.x+=dx*sp*dt;c.z+=dz*sp*dt;c.ry=Math.atan2(dx,dz);c.ph+=dt*sp*1.6}
- hitWall(c,.55);c.x=cl(c.x,-60,SZ+400);c.z=cl(c.z,-60,SZ+60);
+ hitWall(c,.55);if(!window.INSIDE){c.x=cl(c.x,-60,SZ+400);c.z=cl(c.z,-60,SZ+60)}
  if(K.Space&&!(c.y>0))c.vy=6.5;c.vy=(c.vy||0)-18*dt;c.y=Math.max(0,(c.y||0)+c.vy*dt);if(c.y===0)c.vy=0;if(G.wep===2&&K.Fire)c.ry=G.cy;
  c.m.position.set(c.x,(sw?-.9:0)+c.y,c.z);c.m.rotation.y+=wrap(c.ry-c.m.rotation.y)*Math.min(1,12*dt);
  c.m.userData.armed=G.wep===2;animH(c.m,c.ph,l>0?(K.ShiftLeft?2.2:1.2):0,G.wep===2&&(K.Fire||G.shotT>1)?'aim':'');
@@ -379,7 +379,7 @@ function openOnline(){if(!window.UlianOnlineUI){const t=$('mt');t.style.color='#
 function onlineTick(dt,c){if(!remote||!window.UlianOnline)return;remote.update(dt);if(UlianOnline.room)UlianOnline.sendState({x:G.veh?G.veh.x:c.x,y:0,z:G.veh?G.veh.z:c.z,ry:G.veh?G.veh.h:c.ry,anim:G.veh?'drive':'idle',veh:G.veh?'car':null})}
 function start(cont){if(!audio)initAudio();initGame(cont);playing=true;$('menu').hidden=true;$('hud').hidden=false;$('touch').hidden=!('ontouchstart' in window);resize();toast(cont?'Welcome back':'Marco: "Raul is waiting on the beach."')}
 $('bn').onclick=()=>start(false);$('bo').onclick=openOnline;$('po').onclick=()=>{pause(false);openOnline()};$('bc').onclick=()=>start(true);
-$('bs').textContent='⚙ Settings';$('bs').onclick=()=>USET.open();$('pset').onclick=()=>USET.open();try{USET.boot()}catch(e){}
+$('bs').textContent='⚙ Settings';$('bs').onclick=()=>USET.open();$('pset').onclick=()=>USET.open();try{USET.boot()}catch(e){}try{KEYS.boot()}catch(e){}try{CITY.boot()}catch(e){console.error(e)}
 $('bq').onclick=()=>{window.close();$('mt').textContent='Thanks for playing — you can close this tab.'};
 $('pr').onclick=()=>pause(false);$('ps').onclick=()=>save();$('pq').onclick=()=>{pause(false);playing=false;$('menu').hidden=false;$('hud').hidden=true;$('touch').hidden=true;initGame(false)};
 try{if(!localStorage.getItem('vcu'))$('bc').disabled=true}catch(e){$('bc').disabled=true}

@@ -116,7 +116,7 @@
         case 'left_self': this.room = null; emit('leftSelf'); break;
         case 'snap': emit('snap', m); break;
         case 'entered': case 'left': case 'hp': case 'died': case 'respawn': case 'fx':
-        case 'chat': case 'invite': case 'presence': case 'correct': case 'invite_sent':
+        case 'chat': case 'dm': case 'dm_sent': case 'invite': case 'presence': case 'correct': case 'invite_sent':
           emit(m.t, m); break;
         case 'error': emit('error', m); this._setStatus(this.status, m.msg); break;
       }
@@ -133,6 +133,7 @@
     createRoom() { this._send({ t: 'create' }); },
     joinRoom(code) { this._send({ t: 'join', room: code || 'PUBLIC' }); },
     leaveRoom() { this._send({ t: 'leave' }); },
+    dm(to, text) { this._send({ t: 'dm', to, text }); },
     invite(friendId) { this._send({ t: 'invite', to: friendId }); },
 
     // ---------- friends (Supabase, protected by RLS) ----------
@@ -217,6 +218,19 @@
     clear() { [...this.map.keys()].forEach(id => this.remove(id)); }
   }
 
+  // Turn confusing network errors into a message a player can act on.
+  function niceErr(e) {
+    const m = String((e && e.message) || e || '');
+    if (/not valid JSON|Unexpected token '<'|<html/i.test(m))
+      return new Error('The account server (Supabase) answered with a web page instead of data.\nMost likely: the Supabase project is paused (open supabase.com -> your project -> Restore), or supabaseUrl in client/online-config.js is wrong.\nOffline mode still works.');
+    if (/Failed to fetch|NetworkError|Load failed/i.test(m))
+      return new Error('Cannot reach the account server. Check your internet connection (and ad-blockers), then try again.');
+    return e instanceof Error ? e : new Error(m);
+  }
+  ['init', 'register', 'login', 'logout', 'friends'].forEach((n) => {
+    const f = Online[n]; if (typeof f !== 'function') return;
+    Online[n] = async function (...a) { try { return await f.apply(this, a); } catch (e) { throw niceErr(e); } };
+  });
   window.UlianOnline = Online;
   window.RemotePlayers = RemotePlayers;
 })();

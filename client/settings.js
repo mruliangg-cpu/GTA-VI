@@ -1,7 +1,7 @@
 /* Ulian Edition — settings: graphics, realism, sensitivity, key rebinding. Loaded BEFORE the main game script. */
 (function(){
-const DEF={up:'KeyW',down:'KeyS',left:'KeyA',right:'KeyD',sprint:'ShiftLeft',car:'KeyF',use:'KeyE',swap:'KeyQ',reload:'KeyR',brake:'Space',weather:'KeyT',fists:'Digit1',gun:'Digit2'};
-const NAMES={up:'Move forward',down:'Move back',left:'Move left',right:'Move right',sprint:'Sprint',car:'Enter / exit car',use:'Interact',swap:'Switch character',reload:'Reload',brake:'Handbrake',weather:'Weather',fists:'Fists',gun:'Pistol'};
+const DEF={up:'KeyW',down:'KeyS',left:'KeyA',right:'KeyD',sprint:'ShiftLeft',car:'KeyF',use:'KeyE',swap:'KeyQ',reload:'KeyR',brake:'Space',weather:'KeyT',fists:'Digit1',gun:'Digit2',players:'KeyU',map:'KeyM',friends:'KeyP',phone:'KeyL'};
+const NAMES={up:'Move forward',down:'Move back',left:'Move left',right:'Move right',sprint:'Sprint',car:'Enter / exit car',use:'Interact',swap:'Switch character',reload:'Reload',brake:'Handbrake',weather:'Weather',fists:'Fists',gun:'Pistol',players:'Players on server',map:'Map',friends:'Invite friends',phone:'Phone'};
 const D={gfx:'high',real:60,fov:65,mouse:1,touch:1,inv:false,keys:{}};
 let S=Object.assign({},D,{keys:{}}),KM={};
 try{const o=JSON.parse(localStorage.getItem('vcu_settings'));if(o)S=Object.assign(S,o,{keys:Object.assign({},o.keys)})}catch(e){}

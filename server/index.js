@@ -236,6 +236,17 @@ wss.on('connection', (ws) => {
         break;
       }
 
+      case 'dm': {
+        const to = String(msg.to || ''), text = clean(msg.text, 200);
+        if (!UUID.test(to) || !text) return;
+        if (!(await areFriends(p.id, to))) return send(ws, { t: 'error', code: 'NOT_FRIENDS', msg: 'You can only message friends.' });
+        const f = players.get(to);
+        if (!f) return send(ws, { t: 'error', code: 'OFFLINE', msg: 'That friend is offline.' });
+        send(f.ws, { t: 'dm', from: p.id, name: p.name, text });
+        send(ws, { t: 'dm_sent', to });
+        break;
+      }
+
       case 'presence': {
         // Which of my friend ids are online right now?
         const ids = Array.isArray(msg.ids) ? msg.ids.slice(0, 200).filter(i => UUID.test(i)) : [];
